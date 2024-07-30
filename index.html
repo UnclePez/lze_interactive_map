@@ -80,20 +80,34 @@
 
                 markers.push(marker); // Store the marker reference
 
-                if (isTouchDevice) { // Tap shows marker popup, double tap opens marker info in modal
+                if (isTouchDevice) { // Handle touch devices
                     let lastTap = 0;
+                    let popupOpened = false;
+
                     marker.on('click', function(event) {
                         const now = new Date().getTime();
                         const timeSinceLastTap = now - lastTap;
                         lastTap = now;
-                        
-                        if (timeSinceLastTap < 300) { // Double tap
+
+                        if (timeSinceLastTap < 300) { // Double tap will close the popup if it's open, and open the modal
+                            if (popupOpened) {
+                                marker.closePopup();
+                                popupOpened = false;
+                            } else {
+                                popupOpened = true;
+                            }
                             openCustomWindow(markerData);
-                        } else { // Single tap
-                            marker.openPopup();
+                        } else { //Single tap will check status and toggle the popup on/off
+                            if (popupOpened) {
+                                marker.closePopup();
+                                popupOpened = false;
+                            } else {
+                                marker.openPopup();
+                                popupOpened = true;
+                            }
                         }
                     });
-                } else { // Assume the device has a mouse or pad. Hover shows popup, click opens marker info in modal
+                } else { // Desktop devices
                     var closePopupTimeout;
                     marker.on('mouseover', function() {
                         if (closePopupTimeout) { clearTimeout(closePopupTimeout); }
