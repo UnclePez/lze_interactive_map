@@ -6,10 +6,22 @@
     <title>Custom Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="styles.css" />
-    <style> #map {height: 100vh; width: 100%;}</style>
+    <style> 
+        #map { height: 100vh; width: 100%; }
+    </style>
 </head>
 <body>
     <div id="map"></div>
+
+    <!-- Modal structure -->
+    <div id="markerModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="modalClose">&times;</span>
+            <h2 id="modalTitle"></h2>
+            <p id="modalText"></p>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         // MAP SETUP --------------------------------------------------
@@ -30,12 +42,16 @@
             {
                 coordinates: [1912, 1059],
                 iconUrl: 'images/icons/lootcrate_icon.png',
-                popupText: 'LOOT CRATE'
+                popupText: 'LOOT CRATE',
+                modalText: 'This will show information about the Loot Crate',
+                // Add additional properties for marker-specific modal info
             },
             {
                 coordinates: [1125, 124],
                 iconUrl: 'images/icons/airdrop_icon.png',
-                popupText: 'AIR DROP'
+                popupText: 'AIR DROP',
+                modalText: 'This will show information about the Air Drop',
+                // Add additional properties for marker-specific modal info
             },
             // Add more markers here
         ];
@@ -55,7 +71,6 @@
         // CREATE MARKERS ---------------------------------------------
         function createMarkers() {
             markersData.forEach(function(markerData) {
-
                 // Format coordinates to transfer neatly from image software to leaflet, helps in accurately placing markers
                 var adjustedcoordinates = [bounds[1][0] - markerData.coordinates[1], markerData.coordinates[0]];
 
@@ -70,9 +85,16 @@
                 var closePopupTimeout;
                 marker.on('mouseover', function() {
                     if (closePopupTimeout) { clearTimeout(closePopupTimeout); }
-                    marker.openPopup();});
+                    marker.openPopup();
+                });
                 marker.on('mouseout', function() {
-                    closePopupTimeout = setTimeout(function() { marker.closePopup(); }, 100);});
+                    closePopupTimeout = setTimeout(function() { marker.closePopup(); }, 100);
+                });
+
+                // Open custom modal on marker click
+                marker.on('click', function() {
+                    openCustomWindow(markerData);
+                });
             });
         }
 
@@ -93,6 +115,23 @@
         map.on('zoomend', updateMarkerSize); // Adjust marker size and popup anchor on zoom
         updateMarkerSize(); // Initial adjustment
 
+        // Function to open the modal with marker information
+        function openCustomWindow(markerData) {
+            document.getElementById('modalTitle').innerText = markerData.modalText;
+            document.getElementById('markerModal').style.display = 'block';
+        }
+
+        // Function to close the modal
+        document.getElementById('modalClose').onclick = function() {
+            document.getElementById('markerModal').style.display = 'none';
+        }
+
+        // Close the modal if the user clicks outside of it
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('markerModal')) {
+                document.getElementById('markerModal').style.display = 'none';
+            }
+        }
     </script>
 </body>
 </html>
