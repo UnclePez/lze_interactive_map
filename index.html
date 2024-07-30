@@ -3,28 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Map</title>
+    <title>Custom Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <style>
-        #map {
-            height: 100vh;
-            width: 100%;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css" />
+    <style> #map {height: 100vh; width: 100%;}</style>
 </head>
 <body>
     <div id="map"></div>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-        var map = L.map('map').setView([51.505, -0.09], 13);
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-        
-        L.marker([51.5, -0.09]).addTo(map)
-            .bindPopup('A pretty CSS3 popup.<br> Easily customizable.')
-            .openPopup();
+        // MAP SETUP --------------------------------------------------
+        var map = L.map('map', {
+            crs: L.CRS.Simple,
+            minZoom: -3,
+            maxZoom: 1,
+            zoomDelta: 0.5, // Adjust zoom step size when clicking + or -
+            zoomSnap: 0.5, // Adjust zoom snapping to step sizes
+        });
+        var bounds = [[0,0], [1649, 2324]]; // Define the bounds of the map
+        var image = L.imageOverlay('images/research_facility_0.png', bounds).addTo(map);
+        map.fitBounds(bounds); // Set the view to the bounds of the image
+        map.setZoom(-1); // Adjust original zoom level
+
+        // MARKER DATA ------------------------------------------------
+        var markersData = [
+            {
+                coordinates: [1912, 1059],
+                iconUrl: 'images/icons/lootcrate_icon.png',
+                popupText: 'LOOT CRATE'
+            },
+            {
+                coordinates: [1125, 124],
+                iconUrl: 'images/icons/airdrop_icon.png',
+                popupText: 'AIR DROP'
+            },
+            // Add more markers here
+        ];
+
+        var markers = [];
+
+        // CREATE ICON ------------------------------------
+        function createIcon(size, iconUrl) {
+            return L.icon({
+                iconUrl: iconUrl,
+                iconSize: [size, size], // Adjust icon size
+                iconAnchor: [size / 2, size / 2], // Anchor point of the icon
+                popupAnchor: [0, (-size / 2) + 10] // Adjust popup anchor relative to the icon size
+            });
+        }
+
+        // CREATE MARKERS ---------------------------------------------
+        function createMarkers() {
+            markersData.forEach(function(markerData) {
+
+                // Format coordinates to transfer neatly from image software to leaflet, helps in accurately placing markers
+                var adjustedcoordinates = [bounds[1][0] - markerData.coordinates[1], markerData.coordinates[0]];
+
+                var marker = L.marker(adjustedcoordinates, {
+                    icon: createIcon(32, markerData.iconUrl)
+                }).addTo(map);
+                marker.bindPopup(markerData.popupText, {autoPan: false});
+
+                markers.push(marker); // Store the marker reference
+
+                // Open popup on mouse hover, close popup with delay after mouse leaves area
+                var closePopupTimeout;
+                marker.on('mouseover', function() {
+                    if (closePopupTimeout) { clearTimeout(closePopupTimeout); }
+                    marker.openPopup();});
+                marker.on('mouseout', function() {
+                    closePopupTimeout = setTimeout(function() { marker.closePopup(); }, 100);});
+            });
+        }
+
+        createMarkers();
+
+        // MARKER SIZE ADJUSTMENTS --------------------------------------
+        function updateMarkerSize() { // Update marker size and popup anchor based on zoom level
+            var zoom = map.getZoom() - 2.4;
+            var newSize = Math.max(16, 32 * Math.pow(2, zoom - map.getMinZoom())); // Adjust size
+            
+            markers.forEach(function(marker) {
+                var iconUrl = marker.options.icon.options.iconUrl; // Retrieve the original icon URL
+                var newIcon = createIcon(newSize, iconUrl);
+                marker.setIcon(newIcon); // Update marker icon
+            });
+        }
+
+        map.on('zoomend', updateMarkerSize); // Adjust marker size and popup anchor on zoom
+        updateMarkerSize(); // Initial adjustment
+
     </script>
 </body>
 </html>

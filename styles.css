@@ -1,0 +1,66 @@
+@font-face {
+    font-family: 'conthrax-regular'; /* Name your font family */
+    src: url('fonts/Conthrax Regular.otf');
+}
+@font-face {
+    font-family: 'conthrax-light'; /* Name your font family */
+    src: url('fonts/Conthrax Light.otf');
+}
+@font-face {
+    font-family: 'conthrax-semibold'; /* Name your font family */
+    src: url('fonts/Conthrax SemiBold.otf');
+}
+@font-face {
+    font-family: 'conthrax-bold'; /* Name your font family */
+    src: url('fonts/Conthrax Bold.otf');
+}
+@font-face {
+    font-family: 'conthrax-heavy'; /* Name your font family */
+    src: url('fonts/Conthrax Heavy Italic.otf');
+}
+@font-face {
+    font-family: 'conthrax-book-italic'; /* Name your font family */
+    src: url('fonts/Conthrax Book Italic.otf');
+}
+
+/* Style for the Leaflet popup container */
+.leaflet-popup {
+    background: rgba(17, 22, 34, 0.521); /* Semi-transparent black background */
+    backdrop-filter: blur(5px);
+    border-radius: 3px; /* Rounded corners */
+    padding: 4px; /* Padding inside the popup */
+    padding-top: 2px;
+    padding-bottom: 16px;
+    color: white; /* Text color */
+    box-shadow: none;
+}
+
+.leaflet-popup-content-wrapper {
+    background: rgba(0, 0, 0, 0); /* Transparent background */
+    box-shadow: none;
+}
+
+/* Style for the Leaflet popup content */
+.leaflet-popup-content {
+    color: white; /* Text color */
+    font-family: 'conthrax-regular', sans-serif; /* Custom font */
+    font-size: 14px; /* Font size */
+    letter-spacing: 1.5px;
+    margin: 0; /* Remove margin */
+    padding: 0; /* Remove padding */
+}
+
+/* Hide the popup close button */
+.leaflet-popup-close-button {
+    display: none; /* Hide close button */
+}
+
+/* Hide the default popup arrow */
+.leaflet-popup-tip {
+    display: none; /* Hide the popup arrow */
+}
+
+.leaflet-marker-icon {
+    transform: scale(1); /* Initial scale */
+    transform-origin: center center; /* Center scaling */
+}
