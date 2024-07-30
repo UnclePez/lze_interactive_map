@@ -69,6 +69,8 @@
         }
 
         // CREATE MARKERS ---------------------------------------------
+        var openedMarker = null; // Global variable to keep track of the currently opened marker
+
         function createMarkers() {
             markersData.forEach(function(markerData) {
                 var adjustedcoordinates = [bounds[1][0] - markerData.coordinates[1], markerData.coordinates[0]];
@@ -82,7 +84,6 @@
 
                 if (isTouchDevice) { // Handle touch devices
                     let lastTap = 0;
-                    let popupOpened = false;
 
                     marker.on('click', function(event) {
                         const now = new Date().getTime();
@@ -90,20 +91,18 @@
                         lastTap = now;
 
                         if (timeSinceLastTap < 300) { // Double tap will close the popup if it's open, and open the modal
-                            if (popupOpened) {
+                            if (openedMarker === marker) {
                                 marker.closePopup();
-                                popupOpened = false;
-                            } else {
-                                popupOpened = true;
-                            }
+                                openedMarker = null;
+                            } 
                             openCustomWindow(markerData);
-                        } else { //Single tap will check status and toggle the popup on/off
-                            if (popupOpened) {
+                        } else { // Single tap will check status and toggle the popup on/off
+                            if (openedMarker === marker) {
                                 marker.closePopup();
-                                popupOpened = false;
+                                openedMarker = null;
                             } else {
                                 marker.openPopup();
-                                popupOpened = true;
+                                openedMarker = marker;
                             }
                         }
                     });
@@ -119,6 +118,14 @@
                     marker.on('click', function() {
                         openCustomWindow(markerData);
                     });
+                }
+            });
+
+            // Handle tap outside of markers
+            map.on('click', function(event) {
+                if (openedMarker) {
+                    openedMarker.closePopup(); // Close the currently opened popup
+                    openedMarker = null; // Reset the global variable
                 }
             });
         }
