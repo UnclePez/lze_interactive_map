@@ -31,6 +31,7 @@
             maxZoom: 1,
             zoomDelta: 0.5, // Adjust zoom step size when clicking + or -
             zoomSnap: 0.5, // Adjust zoom snapping to step sizes
+            doubleClickZoom: false
         });
         var bounds = [[0,0], [1649, 2324]]; // Define the bounds of the map
         var image = L.imageOverlay('images/research_facility_0.png', bounds).addTo(map);
@@ -44,19 +45,18 @@
                 iconUrl: 'images/icons/lootcrate_icon.png',
                 popupText: 'LOOT CRATE',
                 modalText: 'This will show information about the Loot Crate',
-                // Add additional properties for marker-specific modal info
             },
             {
                 coordinates: [1125, 124],
                 iconUrl: 'images/icons/airdrop_icon.png',
                 popupText: 'AIR DROP',
                 modalText: 'This will show information about the Air Drop',
-                // Add additional properties for marker-specific modal info
             },
             // Add more markers here
         ];
 
         var markers = [];
+        var isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
         // CREATE ICON ------------------------------------
         function createIcon(size, iconUrl) {
@@ -64,14 +64,13 @@
                 iconUrl: iconUrl,
                 iconSize: [size, size], // Adjust icon size
                 iconAnchor: [size / 2, size / 2], // Anchor point of the icon
-                popupAnchor: [0, (-size / 2) + 10] // Adjust popup anchor relative to the icon size
+                popupAnchor: [0, (-size / 2) + 10] // Adjusted for ideal position at all zoom levels. A lil bit messy but if it works it works
             });
         }
 
         // CREATE MARKERS ---------------------------------------------
         function createMarkers() {
             markersData.forEach(function(markerData) {
-                // Format coordinates to transfer neatly from image software to leaflet, helps in accurately placing markers
                 var adjustedcoordinates = [bounds[1][0] - markerData.coordinates[1], markerData.coordinates[0]];
 
                 var marker = L.marker(adjustedcoordinates, {
@@ -81,20 +80,32 @@
 
                 markers.push(marker); // Store the marker reference
 
-                // Open popup on mouse hover, close popup with delay after mouse leaves area
-                var closePopupTimeout;
-                marker.on('mouseover', function() {
-                    if (closePopupTimeout) { clearTimeout(closePopupTimeout); }
-                    marker.openPopup();
-                });
-                marker.on('mouseout', function() {
-                    closePopupTimeout = setTimeout(function() { marker.closePopup(); }, 100);
-                });
-
-                // Open custom modal on marker click
-                marker.on('click', function() {
-                    openCustomWindow(markerData);
-                });
+                if (isTouchDevice) { // Tap shows marker popup, double tap opens marker info in modal
+                    let lastTap = 0;
+                    marker.on('click', function(event) {
+                        const now = new Date().getTime();
+                        const timeSinceLastTap = now - lastTap;
+                        lastTap = now;
+                        
+                        if (timeSinceLastTap < 300) { // Double tap
+                            openCustomWindow(markerData);
+                        } else { // Single tap
+                            marker.openPopup();
+                        }
+                    });
+                } else { // Assume the device has a mouse or pad. Hover shows popup, click opens marker info in modal
+                    var closePopupTimeout;
+                    marker.on('mouseover', function() {
+                        if (closePopupTimeout) { clearTimeout(closePopupTimeout); }
+                        marker.openPopup();
+                    });
+                    marker.on('mouseout', function() {
+                        closePopupTimeout = setTimeout(function() { marker.closePopup(); }, 100);
+                    });
+                    marker.on('click', function() {
+                        openCustomWindow(markerData);
+                    });
+                }
             });
         }
 
@@ -126,7 +137,7 @@
             document.getElementById('markerModal').style.display = 'none';
         }
 
-        // Close the modal if the user clicks outside of it
+        // Close the modal if the user clicks/taps outside of it
         window.onclick = function(event) {
             if (event.target == document.getElementById('markerModal')) {
                 document.getElementById('markerModal').style.display = 'none';
