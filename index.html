@@ -27,11 +27,13 @@
         // MAP SETUP --------------------------------------------------
         var map = L.map('map', {
             crs: L.CRS.Simple,
-            minZoom: -3,
-            maxZoom: 1,
+            minZoom: -1, // How far you can zoom out
+            maxZoom: 2, // How far you can zoom in
             zoomDelta: 0.5, // Adjust zoom step size when clicking + or -
             zoomSnap: 0.5, // Adjust zoom snapping to step sizes
-            doubleClickZoom: false
+            doubleClickZoom: false,
+            wheelPxPerZoomLevel: 200, // Adjust zoom level when using mouse wheel
+            zoomAnimation: false, // Whether zooming is delayed by a smooth transition animation
         });
         var bounds = [[0,0], [1649, 2324]]; // Define the bounds of the map
         var image = L.imageOverlay('images/research_facility_0.png', bounds).addTo(map);
@@ -134,7 +136,7 @@
 
         // MARKER SIZE ADJUSTMENTS --------------------------------------
         function updateMarkerSize() { // Update marker size and popup anchor based on zoom level
-            var zoom = map.getZoom() - 2.4;
+            var zoom = map.getZoom() - 0.5; // Change overall icon size with the number here!!
             var newSize = Math.max(16, 32 * Math.pow(2, zoom - map.getMinZoom())); // Adjust size
             
             markers.forEach(function(marker) {
